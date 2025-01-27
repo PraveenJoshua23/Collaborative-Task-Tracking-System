@@ -32,3 +32,6 @@ coverage/
 # Misc
 .tmp/
 .temp/
+
+uploads/tasks/*
+uploads/avatar/*
