@@ -9,9 +9,11 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.userId;
-    next();
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) return res.status(403).json({ message: 'Invalid token' });
+      req.user = user; // This line is crucial
+      next();
+    });
   } catch (error) {
     res.status(403).json({ message: 'Invalid token' });
   }

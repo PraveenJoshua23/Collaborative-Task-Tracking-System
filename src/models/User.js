@@ -19,9 +19,31 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  role: {
+    type: String,
+    enum: ['admin', 'team_leader', 'team_member', 'viewer'],
+    default: 'team_member',
+  },
+  teamRoles: [
+    {
+      teamId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+      },
+      role: {
+        type: String,
+        enum: ['leader', 'member', 'viewer'],
+        default: 'member',
+      },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  avatar: {
+    type: String,
+    default: null,
   },
 });
 
