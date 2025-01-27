@@ -7,6 +7,7 @@ import {
   changePassword,
   getActivity,
   uploadAvatar,
+  getTeams,
 } from '../controllers/profileController.js';
 import {
   handleUploadError,
@@ -23,5 +24,6 @@ router.delete('/', deleteProfile);
 router.put('/password', changePassword);
 router.get('/activity', getActivity);
 router.post('/avatar', handleUploadError, uploadAvatarMiddleware, uploadAvatar);
+router.get('/teams', getTeams);
 
 export default router;

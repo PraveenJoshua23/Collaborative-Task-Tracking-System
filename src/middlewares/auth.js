@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 export const authenticateToken = async (req, res, next) => {
   try {
@@ -9,9 +10,19 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) return res.status(403).json({ message: 'Invalid token' });
-      req.user = user; // This line is crucial
+
+      // Fetch complete user data including roles
+      const user = await User.findById(decoded.userId)
+        .select('-password')
+        .lean();
+
+      if (!user) {
+        return res.status(403).json({ message: 'User not found' });
+      }
+
+      req.user = user;
       next();
     });
   } catch (error) {

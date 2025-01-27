@@ -2,12 +2,32 @@ import User from '../models/User.js';
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select('-password');
-    res.json(user);
+    const user = await User.findById(req.user.userId)
+      .select('-password')
+      .populate({
+        path: 'teamRoles.teamId',
+        select: 'name description',
+      });
+
+    const profileData = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      teams: user.teamRoles.map((teamRole) => ({
+        team: teamRole.teamId,
+        role: teamRole.role,
+      })),
+      createdAt: user.createdAt,
+    };
+
+    res.json(profileData);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Error fetching profile', error: error.message });
+    res.status(500).json({
+      message: 'Error fetching profile',
+      error: error.message,
+    });
   }
 };
 
@@ -29,13 +49,35 @@ export const updateProfile = async (req, res) => {
       req.user.userId,
       { $set: { name, email } },
       { new: true, runValidators: true }
-    ).select('-password');
+    )
+      .select('-password')
+      .populate({
+        path: 'teamRoles.teamId',
+        select: 'name description',
+      });
 
-    res.json({ message: 'Profile updated successfully', user: updatedUser });
+    const profileData = {
+      id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      avatar: updatedUser.avatar,
+      teams: updatedUser.teamRoles.map((teamRole) => ({
+        team: teamRole.teamId,
+        role: teamRole.role,
+      })),
+      createdAt: updatedUser.createdAt,
+    };
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: profileData,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Error updating profile', error: error.message });
+    res.status(500).json({
+      message: 'Error updating profile',
+      error: error.message,
+    });
   }
 };
 
@@ -106,5 +148,28 @@ export const uploadAvatar = async (req, res) => {
     res
       .status(500)
       .json({ message: 'Error uploading avatar', error: error.message });
+  }
+};
+
+export const getTeams = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+      .select('teamRoles')
+      .populate({
+        path: 'teamRoles.teamId',
+        select: 'name description createdAt',
+      });
+
+    const teams = user.teamRoles.map((teamRole) => ({
+      team: teamRole.teamId,
+      role: teamRole.role,
+    }));
+
+    res.json({ teams });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error fetching teams',
+      error: error.message,
+    });
   }
 };
